@@ -130,7 +130,7 @@ namespace MvcMessageLogger.FeatureTests
             response.EnsureSuccessStatusCode();
             var html = await response.Content.ReadAsStringAsync();
 
-            Assert.Contains("<form method=\"post\" action=\"users/login\">", html);
+            Assert.Contains("<form method=\"post\" action=\"/users/login\">", html);
             Assert.Contains("input", html);
             Assert.Contains("label", html);
             Assert.Contains("Password", html);

@@ -50,9 +50,8 @@ namespace MvcMessageLogger.FeatureTests
 
             Assert.Contains(user1.Name, html);
             Assert.Contains($"<form method=\"post\" action=\"/users/{user1.Id}/messages\">", html);
-            Assert.Contains("input", html);
-            Assert.Contains("label", html);
-            Assert.Contains("Add Message:", html);
+            Assert.Contains("textarea", html);
+            Assert.Contains("Create Message", html);
         }
         [Fact]
         public async Task Create_RedirectsToUserShowPageShowingNewMessage()
