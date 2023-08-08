@@ -42,7 +42,7 @@ namespace MvcMessageLogger.Controllers
             var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
             ViewData["ActiveUser"] = activeUser;
             var message = _context.Messages.Find(messageId);
-            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            var user = _context.Users.Where(u => u.Id == messageId).Include(u => u.Messages).Single();
             message.Author = user;
             return View(message);
         }
@@ -51,11 +51,11 @@ namespace MvcMessageLogger.Controllers
         [Route("/users/{userId:int}/messages/{messageId:int}")]
         public IActionResult Update(int userId, int messageId, string content)
         {
-            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            var user = _context.Users.Where(u => u.Id == messageId).Include(u => u.Messages).Single();
             var message = _context.Messages.Find(messageId);
             message.Content = content;
             message.Edited = true;
-            _context.Messages.Update(message)
+            _context.Messages.Update(message);
             return Redirect($"/users/{userId}");
         }
 
