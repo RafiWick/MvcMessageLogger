@@ -14,6 +14,9 @@ namespace MvcMessageLogger.Controllers
         }
         public IActionResult Index()
         {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
+
             var users = _context.Users.ToList();
             return View(users);
         }
@@ -58,8 +61,25 @@ namespace MvcMessageLogger.Controllers
         [Route("/users/{id:int}")]
         public IActionResult Show(int id)
         {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
+
             var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
             return View(user);
+        }
+
+        [HttpPost]
+        public IActionResult LogOut()
+        {
+            var user = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            if (user != null)
+            {
+                user.LoggedIn = false;
+                _context.Users.Update(user);
+                _context.SaveChanges();
+            }
+
+            return Redirect("/users");
         }
     }
 }

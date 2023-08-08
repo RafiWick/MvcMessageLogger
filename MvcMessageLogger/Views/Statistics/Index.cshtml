@@ -1,0 +1,25 @@
+﻿@model Statistics
+<h1>Statistics</h1>
+<h3>Users With the Most Messages</h3>
+<p>
+    @foreach(string line in Model.UsersByNumberOfMessages())
+    {
+        <span>@line</span><br />
+    }
+</p>
+<h3>Ten Most Used Words</h3>
+<p>
+    @foreach(string line in Model.AllMostCommonWords())
+    {
+        <span>@line</span><br />
+    }
+</p>
+<h3>Busiest Hour</h3>
+<p>
+    @foreach (string line in Model.BusiestHour())
+    {
+        <span>@line</span>
+
+        <br />
+    }
+</p>

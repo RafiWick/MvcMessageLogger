@@ -16,6 +16,9 @@ namespace MvcMessageLogger.Controllers
         [Route("/users/{id:int}/messages/new")]
         public IActionResult New(int id)
         {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
+
             var user = _context.Users.Find(id);
             return View(user);
         }

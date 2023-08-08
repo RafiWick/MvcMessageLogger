@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@{
+    User? activeUser = ViewData["ActiveUser"] as User;
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -28,6 +31,27 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Users</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Statistics" asp-action="Index">Statistics</a>
+                        </li>
+                        @if(activeUser != null)
+                        {
+                            <li class="nav-item">
+                                <form method="post" action="/users/logout">
+                                    <button type="submit">Log Out</button>
+                                </form>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="@activeUser.Id">@activeUser.Username</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="LogIn">Log In</a>
+                            </li>
+                        }
+
                     </ul>
                 </div>
             </div>
