@@ -1,5 +1,6 @@
 ﻿@model User
 @{
+    string password = Model.Password as string;
     string? pcode = ViewData["PCode"] as string;
 }
 <h1>Update User</h1>

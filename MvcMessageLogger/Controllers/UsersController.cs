@@ -91,14 +91,14 @@ namespace MvcMessageLogger.Controllers
             return View(user);
         }
         [HttpPost]
-        [Route("/users/{id:int}/edit")]
+        [Route("/users/{id:int}/editcheck")]
         public IActionResult EditForPasswordCheck(int id, string password)
         {
-            string redirectString = "/users/{id}/editcheck?error=true";
+            string redirectString = $"/users/{id}/editcheck?error=true";
             var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
             if (user.PasswordCheck(password))
             {
-                redirectString = $"/users/{id}/edit?error={user.Encrypt(password)}";
+                redirectString = $"/users/{id}/edit?pcode={user.Encrypt(password)}";
             }
             return Redirect(redirectString);
         }
@@ -116,9 +116,10 @@ namespace MvcMessageLogger.Controllers
         public IActionResult Update(int id, User user)
         {
             user.Id = id;
+            user.Password = user.Encrypt(user.Password);
             _context.Users.Update(user);
             _context.SaveChanges();
-            return Redirect("/users/{id:int}");
+            return Redirect($"/users/{id}");
         }
 
         [HttpPost]

@@ -2,9 +2,9 @@
 <h1>@Model.Author.Name</h1>
 <form method="post" action="/users/@Model.Author.Id/messages/@Model.Id">
     <label for="Content">Add a Message:</label>   <br />
-    <textarea id="Content" name="Content" cols="60" rows="6" value="@Model.Content" required></textarea><br />
+    <textarea id="Content" name="Content" cols="60" rows="6" required>@Model.Content</textarea><br />
     <button type="submit">Update Message</button>
 </form>
-<form method="post" action="/users/@Model.Author.Id/messages.@Model.Id/delete">
+<form method="post" action="/users/@Model.Author.Id/messages/@Model.Id/delete">
     <button type="submit">Delete Message</button>    
 </form>
