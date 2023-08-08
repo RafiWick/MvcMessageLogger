@@ -117,5 +117,14 @@ namespace MvcMessageLogger.Controllers
             return Redirect("/users/{id:int}");
         }
 
+        [HttpPost]
+        [Route("users/{id:int}/delete")]
+        public IActionResult Delete(int id)
+        {
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            _context.Users.Remove(user);
+            _context.SaveChanges();
+            return Redirect("/users");
+        }
     }
 }
