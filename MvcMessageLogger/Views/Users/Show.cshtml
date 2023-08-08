@@ -5,6 +5,7 @@
 @if(Model.LoggedIn == true)
 {
     <a href="/users/@Model.Id/messages/new">Create Message</a>
+    <a href="/users/@Model.Id/editcheck">Edit or Delete Profile</a>
 }
 else
 {
@@ -18,6 +19,6 @@ else
     <p>@message.CreatedAt.ToShortTimeString()<br />@message.CreatedAt.ToShortDateString()</p>
     @if (Model.LoggedIn)
     {
-        <a href="/users/@Model.Id/messages/@message.Id/edit">Edit</a>
+        <a href="/users/@Model.Id/messages/@message.Id/edit">Edit or Delete</a>
     }
 }
