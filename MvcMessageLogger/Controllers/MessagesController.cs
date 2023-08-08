@@ -39,6 +39,8 @@ namespace MvcMessageLogger.Controllers
         [Route("/users/{userId:int}/messages/{messageId:int}/edit")]
         public IActionResult Edit(int userId, int messageId)
         {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
             var message = _context.Messages.Find(messageId);
             var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
             message.Author = user;

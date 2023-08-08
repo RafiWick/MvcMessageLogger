@@ -84,6 +84,8 @@ namespace MvcMessageLogger.Controllers
         [Route("/users/{id:int}/editcheck")]
         public IActionResult EditPasswordCheck(int id, string? error)
         {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
             var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
             ViewData["Error"] = error;
             return View(user);
@@ -103,6 +105,8 @@ namespace MvcMessageLogger.Controllers
         [Route("/users/{id:int}/edit")]
         public IActionResult Edit(int id, string? pcode)
         {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
             var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
             ViewData["PCode"] = pcode;
             return View(user);
