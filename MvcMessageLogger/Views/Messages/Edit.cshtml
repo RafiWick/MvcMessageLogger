@@ -1,0 +1,7 @@
+﻿@model Message
+<h1>@Model.User.Name</h1>
+<form method="post" action="/users/@Model.Id/messages">
+    <label for="Content">Add a Message:</label>   <br />
+    <textarea id="Content" name="Content" cols="60" rows="6" value="@Model.Content" required></textarea><br />
+    <button type="submit">Update Message</button>
+</form>

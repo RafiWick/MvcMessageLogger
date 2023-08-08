@@ -16,4 +16,8 @@ else
 {
     <p>@message.Content</p>
     <p>@message.CreatedAt.ToShortTimeString()<br />@message.CreatedAt.ToShortDateString()</p>
+    @if (Model.LoggedIn)
+    {
+        <a href="/users/@Model.Id/messages/@message.Id/edit">Edit</a>
+    }
 }

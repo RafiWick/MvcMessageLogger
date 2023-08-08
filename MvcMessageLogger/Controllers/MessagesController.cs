@@ -35,5 +35,26 @@ namespace MvcMessageLogger.Controllers
             _context.SaveChanges();
             return Redirect($"/users/{id}");
         }
+
+        [Route("/users/{userId:int}/messages/{messageId:int}/edit")]
+        public IActionResult Edit(int userId, int messageId)
+        {
+            var message = _context.Messages.Find(messageId);
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            message.Author = user;
+            return View(message);
+        }
+
+        [HttpPost]
+        [Route("/users/{userId:int}/messages/{messageId:int}")]
+        public IActionResult Update(int userId, int messageId, string content)
+        {
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            var message = _context.Messages.Find(messageId);
+            message.Content = content;
+            message.Edited = true;
+            _context.Messages.Update(message)
+            return Redirect($"/users/{userId}");
+        }
     }
 }

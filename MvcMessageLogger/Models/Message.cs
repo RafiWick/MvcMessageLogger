@@ -11,6 +11,7 @@ namespace MvcMessageLogger.Models
         public int Id { get; set; }
         public string Content { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool Edited { get; set; } = false;
         public User Author { get; set; }
     }
 }
