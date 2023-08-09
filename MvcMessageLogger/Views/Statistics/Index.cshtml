@@ -1,10 +1,14 @@
 ﻿@model Statistics
+@{
+    int i = 1;
+}
 <h1>Statistics</h1>
 <h3>Users With the Most Messages</h3>
 <p>
     @foreach(string line in Model.UsersByNumberOfMessages())
     {
-        <span>@line</span><br />
+        <span id="@i">@line</span><br />
+        i += 1;
     }
 </p>
 <h3>Ten Most Used Words</h3>

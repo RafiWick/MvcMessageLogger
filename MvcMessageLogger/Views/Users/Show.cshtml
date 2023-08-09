@@ -13,12 +13,16 @@ else
 }
 
 <h3>Messages:</h3>
+<div class="row">
 @foreach(var message in Model.Messages)
 {
-    <p>@message.Content</p>
-    <p>@message.CreatedAt.ToShortTimeString()<br />@message.CreatedAt.ToShortDateString()</p>
-    @if (Model.LoggedIn)
-    {
-        <a href="/users/@Model.Id/messages/@message.Id/edit">Edit or Delete</a>
-    }
+    <div class="col-md-3 border border-secondary border-5">
+        <p>@message.Content</p>
+        <p>@message.CreatedAt.ToShortTimeString() - @message.CreatedAt.ToShortDateString()</p>
+        @if (Model.LoggedIn)
+        {
+            <a href="/users/@Model.Id/messages/@message.Id/edit">Edit or Delete</a>
+        }
+    </div>
 }
+</div>

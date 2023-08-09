@@ -71,10 +71,10 @@ namespace MvcMessageLogger.FeatureTests
             response.EnsureSuccessStatusCode();
             var html = await response.Content.ReadAsStringAsync();
 
-            Assert.Contains("John Doe: 4 messages", html);
-            Assert.Contains("Jane Doe: 3 messages", html);
-            Assert.Contains("Jim Jones: 2 messages", html);
-            Assert.Contains("Frank Kelly: 1 messages", html);
+            Assert.Contains("<span id=\"1\">John Doe: 4 messages", html);
+            Assert.Contains("<span id=\"2\">Jane Doe: 3 messages", html);
+            Assert.Contains("<span id=\"3\">Jim Jones: 2 messages", html);
+            Assert.Contains("<span id=\"4\">Frank Kelly: 1 messages", html);
         }
 
         [Fact]
