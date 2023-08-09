@@ -69,6 +69,7 @@ namespace MvcMessageLogger.Controllers
         }
 
         [HttpPost]
+        [Route("/users/logout")]
         public IActionResult LogOut()
         {
             var user = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
