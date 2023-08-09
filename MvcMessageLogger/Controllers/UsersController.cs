@@ -61,10 +61,10 @@ namespace MvcMessageLogger.Controllers
         [Route("/users/{id:int}")]
         public IActionResult Show(int id)
         {
-            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).Include(u => u.Following).FirstOrDefault();
             ViewData["ActiveUser"] = activeUser;
 
-            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Followers).Include(u => u.Following).Include(u => u.Messages).Single();
             return View(user);
         }
 
@@ -131,6 +131,47 @@ namespace MvcMessageLogger.Controllers
             _context.Users.Remove(user);
             _context.SaveChanges();
             return Redirect("/users");
+        }
+        [HttpPost]
+        [Route("users/{id:int}/follow")]
+        public IActionResult Follow(int id)
+        {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            activeUser.Following.Add(user);
+            user.Followers.Add(activeUser);
+            _context.Users.Update(activeUser);
+            _context.Users.Update(user);
+            _context.SaveChanges();
+
+            return Redirect($"/users/{id}");
+        }
+        [Route("users/{id:int}/following")]
+        public IActionResult Following(int id)
+        {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Following).Single();
+            return View(user);
+        }
+        [Route("users/{id:int}/followers")]
+        public IActionResult Followers(int id)
+        {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Followers).Single();
+            return View(user);
+        }
+        public IActionResult Feed()
+        {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).Include(u=> u.Following).ThenInclude(u => u.Messages).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
+            var allMessages = new List<Message>();
+            foreach(var user in activeUser.Following)
+            {
+                allMessages.AddRange(user.Messages);
+            }
+            return View(allMessages.OrderBy(m => m.CreatedAt).ToList());
         }
     }
 }

@@ -1,7 +1,12 @@
 ﻿@model User
-
+@{
+    var activeUser = ViewData["ActiveUser"] as User;
+}
 <h1>@Model.Name</h1>
-
+<p>
+    <a href="/users/@Model.Id/following">Following: @Model.Following.Count()</a> - 
+    <a href="/users/@Model.Id/followers">Followers: @Model.Followers.Count()</a>
+</p>
 @if(Model.LoggedIn == true)
 {
     <a href="/users/@Model.Id/messages/new">Create Message</a>
@@ -9,7 +14,19 @@
 }
 else
 {
-    <h5>Not Logged In</h5>
+    if(activeUser != null)
+    {
+        if (activeUser.Following.Contains(Model))
+        {
+            <h5>Following</h5>
+        }
+        else
+        {
+            <form method="post" action="/users/@Model.Id/follow">
+                <button class="bg-success" type="submit">Follow</button>
+            </form>
+        }
+    }
 }
 
 <h3>Messages:</h3>

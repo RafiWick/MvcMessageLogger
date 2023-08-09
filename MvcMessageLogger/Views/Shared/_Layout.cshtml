@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/MvcMessageLogger.styles.css" asp-append-version="true" />
 </head>
-<body class="bg-secondary bg-gradient">
+<body class="bg-gradient" style="background-color: lightgray">
     <header bg-info>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-info border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -35,6 +35,12 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark list-group-item bg-primary bg-gradient" asp-area="" asp-controller="Statistics" asp-action="Index">Statistics</a>
                             </li>
+                            @if (activeUser != null)
+                            {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark list-group-item bg-primary bg-gradient" asp-area="" asp-controller="Users" asp-action="Feed">Feed</a>
+                            </li>
+                            }
                         </div>
                         @if(activeUser != null)
                         {
