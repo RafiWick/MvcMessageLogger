@@ -69,6 +69,7 @@ namespace MvcMessageLogger.Controllers
         }
 
         [HttpPost]
+        [Route("/users/logout")]
         public IActionResult LogOut()
         {
             var user = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
@@ -79,6 +80,56 @@ namespace MvcMessageLogger.Controllers
                 _context.SaveChanges();
             }
 
+            return Redirect("/users");
+        }
+        [Route("/users/{id:int}/editcheck")]
+        public IActionResult EditPasswordCheck(int id, string? error)
+        {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            ViewData["Error"] = error;
+            return View(user);
+        }
+        [HttpPost]
+        [Route("/users/{id:int}/editcheck")]
+        public IActionResult EditForPasswordCheck(int id, string password)
+        {
+            string redirectString = $"/users/{id}/editcheck?error=true";
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            if (user.PasswordCheck(password))
+            {
+                redirectString = $"/users/{id}/edit?pcode={user.Encrypt(password)}";
+            }
+            return Redirect(redirectString);
+        }
+        [Route("/users/{id:int}/edit")]
+        public IActionResult Edit(int id, string? pcode)
+        {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).FirstOrDefault();
+            ViewData["ActiveUser"] = activeUser;
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            ViewData["PCode"] = pcode;
+            return View(user);
+        }
+        [HttpPost]
+        [Route("/users/{id:int}")]
+        public IActionResult Update(int id, User user)
+        {
+            user.Id = id;
+            user.Password = user.Encrypt(user.Password);
+            _context.Users.Update(user);
+            _context.SaveChanges();
+            return Redirect($"/users/{id}");
+        }
+
+        [HttpPost]
+        [Route("users/{id:int}/delete")]
+        public IActionResult Delete(int id)
+        {
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Single();
+            _context.Users.Remove(user);
+            _context.SaveChanges();
             return Redirect("/users");
         }
     }

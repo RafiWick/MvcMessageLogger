@@ -50,9 +50,8 @@ namespace MvcMessageLogger.FeatureTests
 
             Assert.Contains(user1.Name, html);
             Assert.Contains($"<form method=\"post\" action=\"/users/{user1.Id}/messages\">", html);
-            Assert.Contains("input", html);
-            Assert.Contains("label", html);
-            Assert.Contains("Add Message:", html);
+            Assert.Contains("textarea", html);
+            Assert.Contains("Create Message", html);
         }
         [Fact]
         public async Task Create_RedirectsToUserShowPageShowingNewMessage()
@@ -79,6 +78,97 @@ namespace MvcMessageLogger.FeatureTests
             Assert.Contains(user1.Name, html);
             Assert.Contains(user1.Username, html);
             Assert.Contains("test test test", html);
+            Assert.DoesNotContain(user2.Name, html);
+            Assert.DoesNotContain(user2.Username, html);
+        }
+
+        [Fact]
+        public async Task Edit_ReturnsViewWithPrePopulatedMessageForm()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            var message1 = new Models.Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            user1.LoggedIn = true;
+            context.SaveChanges();
+
+            var response = await client.GetAsync($"/users/{user1.Id}/messages/{message1.Id}/edit");
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains(user1.Name, html);
+            Assert.Contains($"<form method=\"post\" action=\"/users/{user1.Id}/messages/{message1.Id}\">", html);
+            Assert.Contains("textarea", html);
+            Assert.Contains("Update Message", html);
+            Assert.Contains(message1.Content, html);
+        }
+
+
+        [Fact]
+        public async Task Update_RedirectsToUserShowPageShowingUpdatedContent()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            user1.LoggedIn = true;
+            var message1 = new Models.Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+
+            context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+                {"Content", "different content" }
+            };
+
+            var response = await client.PostAsync($"/users/{user1.Id}/messages/{message1.Id}", new FormUrlEncodedContent(formData));
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains(user1.Name, html);
+            Assert.Contains(user1.Username, html);
+            Assert.Contains("different content", html);
+            Assert.DoesNotContain(message1.Content, html);
+            Assert.DoesNotContain(user2.Name, html);
+            Assert.DoesNotContain(user2.Username, html);
+            }
+
+        [Fact]
+        public async Task Delete_RedirectsToUserShowPageWithoutDeletedMessage()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            user1.LoggedIn = true;
+            var message1 = new Models.Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+
+            context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+            };
+
+            var response = await client.PostAsync($"/users/{user1.Id}/messages/{message1.Id}/delete", new FormUrlEncodedContent(formData));
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains(user1.Name, html);
+            Assert.Contains(user1.Username, html);
+            Assert.DoesNotContain(message1.Content, html);
             Assert.DoesNotContain(user2.Name, html);
             Assert.DoesNotContain(user2.Username, html);
         }

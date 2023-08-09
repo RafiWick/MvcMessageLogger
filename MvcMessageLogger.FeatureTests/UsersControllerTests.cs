@@ -130,7 +130,7 @@ namespace MvcMessageLogger.FeatureTests
             response.EnsureSuccessStatusCode();
             var html = await response.Content.ReadAsStringAsync();
 
-            Assert.Contains("<form method=\"post\" action=\"users/login\">", html);
+            Assert.Contains("<form method=\"post\" action=\"/users/login\">", html);
             Assert.Contains("input", html);
             Assert.Contains("label", html);
             Assert.Contains("Password", html);
@@ -142,8 +142,10 @@ namespace MvcMessageLogger.FeatureTests
             var client = _factory.CreateClient();
             var context = GetDbContext();
 
-            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "123" };
+            user1.Password = user1.Encrypt("123");
             var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            user2.LoggedIn = false;
             var message1 = new Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
             user1.Messages.Add(message1);
             context.Users.Add(user1);
@@ -154,7 +156,7 @@ namespace MvcMessageLogger.FeatureTests
             var formData = new Dictionary<string, string>
             {
                 {"Email", "john@gmail.com" },
-                {"Password", "abcdefg" }
+                {"Password", "123" }
             };
 
             var response = await client.PostAsync($"/users/login", new FormUrlEncodedContent(formData));
@@ -167,6 +169,168 @@ namespace MvcMessageLogger.FeatureTests
             Assert.Contains(message1.CreatedAt.ToShortTimeString(), html);
             Assert.DoesNotContain(user2.Name, html);
             Assert.DoesNotContain(user2.Username, html);
+        }
+
+        [Fact]
+        public async Task LogOut_ReturnsIndexWithLogInLink()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            user1.Password = user1.Encrypt("abcdefg");
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            user2.Password = user2.Encrypt("abdefg");
+            user2.LoggedIn = false;
+            var message1 = new Models.Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            user1.LoggedIn = true;
+            context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+            };
+
+            var response = await client.PostAsync($"/users/logout", new FormUrlEncodedContent(formData));
+            ;
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains("<a href=\"/users/login\">Log In</a>", html);
+        }
+
+        [Fact]
+        public async Task EditPasswodCheck_ReturnsPasswordField()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            var message1 = new Models.Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            user1.LoggedIn = true;
+            context.SaveChanges();
+
+            var response = await client.GetAsync($"/users/{user1.Id}/editcheck");
+
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains($"<form method=\"post\" action=\"/users/{user1.Id}/editcheck\">", html);
+            Assert.Contains("Password:", html);
+        }
+
+        [Fact]
+        public async Task EditForPasswodCheck_AddsErrorMessageWithIncorrectPassword()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            var message1 = new Models.Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            user1.LoggedIn = true;
+            context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+                {"Password", "abefg" }
+            };
+
+            var response = await client.PostAsync($"/users/{user1.Id}/editcheck", new FormUrlEncodedContent(formData));
+
+
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains("Password Incorect", html);
+            Assert.Contains("Please try agian", html);
+        }
+
+        [Fact]
+        public async Task Edit_ReturnsViewWithPrePopulatedUserForm()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            context.SaveChanges();
+
+            var response = await client.GetAsync($"/users/{user1.Id}/edit?pcode={user1.Password}");
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains($"<form method=\"post\" action=\"/users/{user1.Id}\">", html);
+            Assert.Contains("input", html);
+            Assert.Contains("label", html);
+            Assert.Contains("Username", html);
+            Assert.Contains("Email", html);
+            Assert.Contains("Name", html);
+            Assert.Contains("Password", html);
+            Assert.Contains(user1.Name, html);
+            Assert.Contains(user1.Username, html);
+            Assert.Contains(user1.Email, html);
+        }
+
+        [Fact]
+        public async Task Update_ReturnsShowWithNewUserData()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+                {"Name", "Jim Jones"},
+                {"Username", "jj" },
+                {"Email", "jjones@gmail.com" },
+                {"Password", "hijklmnop" }
+            };
+
+            var response = await client.PostAsync($"/users/{user1.Id}", new FormUrlEncodedContent(formData));
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+            Assert.Contains("Jim Jones", html);
+            Assert.Contains("jj", html);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsIndexWithoutDeletedUser()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+            };
+
+            var response = await client.PostAsync($"/users/{user1.Id}/delete", new FormUrlEncodedContent(formData));
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("Jim Jomes", html);
+            Assert.DoesNotContain("jj", html);
         }
     }
 }
