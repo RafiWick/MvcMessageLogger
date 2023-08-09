@@ -146,6 +146,20 @@ namespace MvcMessageLogger.Controllers
 
             return Redirect($"/users/{id}");
         }
+        [HttpPost]
+        [Route("users/{id:int}/unfollow")]
+        public IActionResult UnFollow(int id)
+        {
+            var activeUser = _context.Users.Where(u => u.LoggedIn == true).Include(u => u.Following).FirstOrDefault();
+            var user = _context.Users.Where(u => u.Id == id).Include(u => u.Messages).Include(u => u.Followers).Single();
+            activeUser.Following.Remove(user);
+            user.Followers.Remove(activeUser);
+            _context.Users.Update(activeUser);
+            _context.Users.Update(user);
+            _context.SaveChanges();
+
+            return Redirect($"/users/{id}");
+        }
         [Route("users/{id:int}/following")]
         public IActionResult Following(int id)
         {
@@ -171,7 +185,7 @@ namespace MvcMessageLogger.Controllers
             {
                 allMessages.AddRange(user.Messages);
             }
-            return View(allMessages.OrderBy(m => m.CreatedAt).ToList());
+            return View(allMessages.OrderByDescending(m => m.CreatedAt).ToList());
         }
     }
 }

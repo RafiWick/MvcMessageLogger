@@ -360,7 +360,36 @@ namespace MvcMessageLogger.FeatureTests
             var html = await response.Content.ReadAsStringAsync();
 
             Assert.Contains("<h5>Following", html);
-            Assert.DoesNotContain("<form method=\"post\" action=\"/users/@Model.Id/follow\">", html);
+            Assert.DoesNotContain($"<form method=\"post\" action=\"/users/{user2.Id}/follow\">", html);
+        }
+        [Fact]
+        public async Task UnFollow_ReturnsShowPageWithoutUnFollowButtom()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            var message1 = new Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            user1.Following.Add(user2);
+            user2.Followers.Add(user1);
+            user1.LoggedIn = true;
+            user2.LoggedIn = false;
+            context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+            };
+
+            var response = await client.PostAsync($"/users/{user2.Id}/unfollow", new FormUrlEncodedContent(formData));
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.DoesNotContain("<h5>Following", html);
+            Assert.Contains($"<form method=\"post\" action=\"/users/{user2.Id}/follow\">", html);
         }
         [Fact]
         public async Task Following_ReturnsPageListOfUsersFollowedByUser()
