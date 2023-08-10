@@ -362,6 +362,7 @@ namespace MvcMessageLogger.FeatureTests
             Assert.Contains("<h5>Following", html);
             Assert.DoesNotContain($"<form method=\"post\" action=\"/users/{user2.Id}/follow\">", html);
         }
+
         [Fact]
         public async Task UnFollow_ReturnsShowPageWithoutUnFollowButtom()
         {
@@ -391,6 +392,7 @@ namespace MvcMessageLogger.FeatureTests
             Assert.DoesNotContain("<h5>Following", html);
             Assert.Contains($"<form method=\"post\" action=\"/users/{user2.Id}/follow\">", html);
         }
+
         [Fact]
         public async Task Following_ReturnsPageListOfUsersFollowedByUser()
         {
@@ -424,6 +426,7 @@ namespace MvcMessageLogger.FeatureTests
             Assert.Contains("Jim Jones", html);
             Assert.Contains("Frank Kelly", html);
         }
+
         [Fact]
         public async Task Followers_ReturnsPageListOfUsersFollowingUser()
         {
@@ -457,6 +460,7 @@ namespace MvcMessageLogger.FeatureTests
             Assert.Contains("Jim Jones", html);
             Assert.Contains("Frank Kelly", html);
         }
+
         [Fact]
         public async Task Feed_ShowsAllMessagesByActiveUsersFollowers()
         {
