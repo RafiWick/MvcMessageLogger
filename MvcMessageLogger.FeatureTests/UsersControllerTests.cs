@@ -34,7 +34,7 @@ namespace MvcMessageLogger.FeatureTests
             var client = _factory.CreateClient();
             var context = GetDbContext();
 
-            var user1 = new User { Name = "John Doe", Username = "jdoe",Email = "john@gmail.com",Password = "abcdefg" };
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
             var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
             context.Users.Add(user1);
             context.Users.Add(user2);
@@ -76,7 +76,7 @@ namespace MvcMessageLogger.FeatureTests
             var context = GetDbContext();
 
             var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
-            var user2 = new User{Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg"};
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
             context.Users.Add(user1);
             context.Users.Add(user2);
             context.SaveChanges();
@@ -95,6 +95,7 @@ namespace MvcMessageLogger.FeatureTests
             Assert.Contains("Jane Doe", html);
             Assert.Contains("j_doe", html);
         }
+
         [Fact]
         public async Task Show_ReturnsViewWithOneUserAndItsMessages()
         {
@@ -136,6 +137,7 @@ namespace MvcMessageLogger.FeatureTests
             Assert.Contains("Password", html);
             Assert.Contains("Email", html);
         }
+
         [Fact]
         public async Task LogIn_POST_RedirectsToCorrectUserShowPage()
         {
@@ -331,6 +333,180 @@ namespace MvcMessageLogger.FeatureTests
             var html = await response.Content.ReadAsStringAsync();
             Assert.DoesNotContain("Jim Jomes", html);
             Assert.DoesNotContain("jj", html);
+        }
+
+        [Fact]
+        public async Task Follow_ReturnsShowPageWithoutFollowButtom()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            var message1 = new Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            user1.LoggedIn = true;
+            user2.LoggedIn = false;
+            context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+            };
+
+            var response = await client.PostAsync($"/users/{user2.Id}/follow", new FormUrlEncodedContent(formData));
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains("<h5>Following", html);
+            Assert.DoesNotContain($"<form method=\"post\" action=\"/users/{user2.Id}/follow\">", html);
+        }
+        [Fact]
+        public async Task UnFollow_ReturnsShowPageWithoutUnFollowButtom()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            var message1 = new Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            user1.Following.Add(user2);
+            user2.Followers.Add(user1);
+            user1.LoggedIn = true;
+            user2.LoggedIn = false;
+            context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+            };
+
+            var response = await client.PostAsync($"/users/{user2.Id}/unfollow", new FormUrlEncodedContent(formData));
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.DoesNotContain("<h5>Following", html);
+            Assert.Contains($"<form method=\"post\" action=\"/users/{user2.Id}/follow\">", html);
+        }
+        [Fact]
+        public async Task Following_ReturnsPageListOfUsersFollowedByUser()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            var user3 = new User { Name = "Jim Jones", Username = "jj", Email = "jim@gmail.com", Password = "abcdefg" };
+            var user4 = new User { Name = "Frank Kelly", Username = "kfrank", Email = "frank@gmail.com", Password = "abdefg" };
+            var message1 = new Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            context.Users.Add(user3);
+            context.Users.Add(user4);
+
+            user1.LoggedIn = true;
+            user1.Following.Add(user2);
+            user1.Following.Add(user3);
+            user1.Following.Add(user4);
+            context.SaveChanges();
+
+
+
+            var response = await client.GetAsync($"/users/{user1.Id}/following");
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains("Jane Doe", html);
+            Assert.Contains("Jim Jones", html);
+            Assert.Contains("Frank Kelly", html);
+        }
+        [Fact]
+        public async Task Followers_ReturnsPageListOfUsersFollowingUser()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            var user3 = new User { Name = "Jim Jones", Username = "jj", Email = "jim@gmail.com", Password = "abcdefg" };
+            var user4 = new User { Name = "Frank Kelly", Username = "kfrank", Email = "frank@gmail.com", Password = "abdefg" };
+            var message1 = new Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            user1.Messages.Add(message1);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            context.Users.Add(user3);
+            context.Users.Add(user4);
+
+            user1.LoggedIn = true;
+            user1.Followers.Add(user2);
+            user1.Followers.Add(user3);
+            user1.Followers.Add(user4);
+            context.SaveChanges();
+
+
+
+            var response = await client.GetAsync($"/users/{user1.Id}/followers");
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains("Jane Doe", html);
+            Assert.Contains("Jim Jones", html);
+            Assert.Contains("Frank Kelly", html);
+        }
+        [Fact]
+        public async Task Feed_ShowsAllMessagesByActiveUsersFollowers()
+        {
+            var client = _factory.CreateClient();
+            var context = GetDbContext();
+
+            var user1 = new User { Name = "John Doe", Username = "jdoe", Email = "john@gmail.com", Password = "abcdefg" };
+            var user2 = new User { Name = "Jane Doe", Username = "j_doe", Email = "jane@gmail.com", Password = "abdefg" };
+            var user3 = new User { Name = "Jim Jones", Username = "jj", Email = "jim@gmail.com", Password = "abcdefg" };
+            var user4 = new User { Name = "Frank Kelly", Username = "kfrank", Email = "frank@gmail.com", Password = "abdefg" };
+
+            var message0 = new Models.Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 24, 0).ToUniversalTime() };
+            var message1 = new Models.Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 23, 0).ToUniversalTime() };
+            var message2 = new Models.Message { Content = "test test test", CreatedAt = new DateTime(2023, 8, 7, 14, 22, 0).ToUniversalTime() };
+            var message3 = new Models.Message { Content = "tst tst tst", CreatedAt = new DateTime(2023, 8, 7, 14, 54, 0).ToUniversalTime() };
+            var message4 = new Models.Message { Content = "check check check", CreatedAt = new DateTime(2023, 8, 3, 4, 24, 0).ToUniversalTime() };
+            var message5 = new Models.Message { Content = "check check check", CreatedAt = new DateTime(2023, 4, 3, 12, 24, 0).ToUniversalTime() };
+            var message6 = new Models.Message { Content = "the the", CreatedAt = new DateTime(2023, 8, 7, 21, 2, 0).ToUniversalTime() };
+            var message7 = new Models.Message { Content = "them them all all but is", CreatedAt = new DateTime(2023, 8, 7, 4, 24, 0).ToUniversalTime() };
+            var message8 = new Models.Message { Content = "yes yes", CreatedAt = new DateTime(2023, 8, 7, 4, 24, 0).ToUniversalTime() };
+            var message9 = new Models.Message { Content = "no no and and maybe maybe", CreatedAt = new DateTime(2023, 5, 7, 4, 54, 0).ToUniversalTime() };
+
+            user1.Messages.Add(message9);
+            user1.Messages.Add(message8);
+            user1.Messages.Add(message7);
+            user1.Messages.Add(message6);
+            user2.Messages.Add(message5);
+            user2.Messages.Add(message4);
+            user2.Messages.Add(message3);
+            user3.Messages.Add(message2);
+            user3.Messages.Add(message1);
+            user4.Messages.Add(message0);
+            context.Users.Add(user1);
+            context.Users.Add(user2);
+            context.Users.Add(user3);
+            context.Users.Add(user4);
+            user2.LoggedIn = false;
+            user3.LoggedIn = false;
+            user1.LoggedIn = false;
+            user4.Following.Add(user3);
+            user4.Following.Add(user1);
+            context.SaveChanges();
+
+            var response = await client.GetAsync($"/users/feed");
+            response.EnsureSuccessStatusCode();
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Contains("test test test", html);
+            Assert.Contains("no no and and maybe maybe", html);
+            Assert.DoesNotContain("check check check", html);
         }
     }
 }
