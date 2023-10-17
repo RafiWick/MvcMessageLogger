@@ -1,30 +1,31 @@
 # MvcMessageLogger
-## Set Up Instructions
+## 👟 Set Up Instructions
 Enter update-database in the package manager console and run the solution
 
 ## Abstract
 This project is a public square application built to compete with the flailing x. In this app, you can share your thoughts with your friends and the world. You can also see what other people around the world are saying.
 
-## Tech Stack
+## 🖥️ Tech Stack
 Microsoft.EntityFrameworkCore.Tools
 
-Npgsql.EntityFrameworkCore.PostgreSQL
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 
+![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
 .NET MVC
 
-c#
+![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
 
 html / css
 
 bootstrap
 ## Context
-### Time Allotted
+### 🕰️ Time Allotted
 This was a solo project that was done in approximately 18 hours over one week.
-### Learning Goals
+### 🏃 Learning Goals
 - Build an MVC Application
 - Use RESTful routes to perform CRUD(Create, Read, Update, Delete) actions on related resources
 - Use Bootstrap to style presentable html pages
-### Wins
+### 🥇 Wins
 - After this project my my ability to write MVC Applications really came together and I bacame confident on the subject
 - I was able to use some css but mostly bootstrap to style this project well enough to be content
 ## Wireframes
